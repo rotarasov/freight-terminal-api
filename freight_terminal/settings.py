@@ -1,7 +1,7 @@
-from pathlib import Path
+from environ import Path, Env
 
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
-BASE_DIR = Path(__file__).resolve().parent.parent
+# Build paths inside the project like this: BASE_DIR('subdir').
+BASE_DIR = Path(__file__) - 2
 
 
 SECRET_KEY = 'ct+98u9zjps$dyx*2d!)=zl=0%0q8a-58+pj$)*m$kgd0!(3v2'
@@ -59,7 +59,7 @@ WSGI_APPLICATION = 'freight_terminal.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'NAME': BASE_DIR('db.sqlite3'),
     }
 }
 
