@@ -20,6 +20,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+
+    'users',
 ]
 
 MIDDLEWARE = [
@@ -51,6 +53,11 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'freight_terminal.wsgi.application'
+
+
+# Authentication
+
+AUTH_USER_MODEL = 'users.User'
 
 
 # Database
