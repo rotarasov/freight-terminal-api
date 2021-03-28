@@ -1,7 +1,6 @@
-from datetime import timedelta, datetime
+from datetime import timedelta
 
 from django.db import models
-from django.core.exceptions import ValidationError
 from django.utils.translation import ugettext_lazy as _
 
 from freight_terminal import settings
@@ -60,8 +59,16 @@ class Service(models.Model):
     delay_time = models.DurationField(_('delay time'), default=timedelta())
     robot = models.ForeignKey('Robot', on_delete=models.CASCADE, related_name='services')
     type = models.CharField(_('type'), max_length=30, choices=Type.choices)
-    status = models.CharField(_('status'), max_length=30, choices=Status.choices, default=Status.DONE)
+    status = models.CharField(_('status'), max_length=30, choices=Status.choices, default=Status.NOT_STARTED)
 
     def __str__(self):
         return f'{self.type} by {self.robot}'
+
+
+class Transfer(models.Model):
+    delivery_service = models.OneToOneField('Service', on_delete=models.CASCADE, related_name='delivery_transfer')
+    reception_service = models.OneToOneField('Service', on_delete=models.CASCADE, related_name='reception_transfer')
+
+    def __str__(self):
+        return f'{self.delivery_service}; {self.reception_service}'
 
