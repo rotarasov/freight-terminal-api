@@ -55,7 +55,6 @@ class Device(models.Model):
 
 class Rule(models.Model):
     coefficient = models.FloatField(_('coefficient'), validators=[MaxValueValidator(1.0)])
-    prefix = models.CharField(_('prefix'), max_length=30, choices=Device.Prefix.choices)
     max_value = models.FloatField(_('max value'))
     min_value = models.FloatField(_('min value'))
     possible_deviation = models.FloatField(_('possible deviation'), default=0)
