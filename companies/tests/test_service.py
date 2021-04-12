@@ -7,35 +7,38 @@ from test_data import fake
 from test_data.companies.company import create_company
 from test_data.companies.robot import create_robot
 from test_data.companies.service import create_robot_service
-from companies.models import Service
+from companies.models import Robot, Service
 from companies.serializers import ServiceSerializer
 
 
 class CreateNewServiceAPITestCase(APITestCase):
     def setUp(self) -> None:
         self.company = create_company()
-        self.robot = create_robot(self.company)
+        self.free_robot = create_robot(company=self.company, status=Robot.Status.FREE)
+        self.busy_robot = create_robot(company=self.company, status=Robot.Status.BUSY)
         self.valid_service = {
             'arrival_datetime': fake.future_datetime(tzinfo=timezone.get_current_timezone()),
             'delay_time': fake.time_delta(),
-            'robot': self.robot.id,
+            'robot': self.free_robot.id,
             'status': fake.random_element(Service.Status.values),
             'type': fake.random_element(Service.Type.values)
         }
-        not_valid_datetime = fake.sentence(1)
-        not_valid_status = fake.sentence(1)
         self.invalid_service = {
-            'arrival_datetime': not_valid_datetime,
+            'arrival_datetime': fake.future_datetime(tzinfo=timezone.get_current_timezone()),
             'delay_time': fake.time_delta(),
-            'robot': self.robot.id,
-            'status': not_valid_status,
+            'robot': self.busy_robot.id,
+            'status': fake.random_element([s for s in Service.Status.values if s != Service.Status.NOT_STARTED]),
             'type': fake.random_element(Service.Type.values)
         }
-        self.service_list_url = reverse('companies:service-list',
-                                        kwargs={'company_pk': self.company.account.id, 'robot_pk': self.robot.id})
+        self.free_robot_service_list_url = reverse('companies:service-list',
+                                                   kwargs={'company_pk': self.company.account.id,
+                                                           'robot_pk': self.free_robot.id})
+        self.busy_robot_service_list_url = reverse('companies:service-list',
+                                                   kwargs={'company_pk': self.company.account.id,
+                                                           'robot_pk': self.busy_robot.id})
 
     def test_valid_service_creation(self):
-        response = self.client.post(self.service_list_url, self.valid_service, format='json')
+        response = self.client.post(self.free_robot_service_list_url, self.valid_service, format='json')
         services = Service.objects.all()
         serializer = ServiceSerializer(services, many=True)
 
@@ -43,14 +46,14 @@ class CreateNewServiceAPITestCase(APITestCase):
         self.assertEqual(response.data, dict(*serializer.data))
 
     def test_invalid_service_creation(self):
-        response = self.client.post(self.service_list_url, self.invalid_service, format='json')
+        response = self.client.post(self.busy_robot_service_list_url, self.invalid_service, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
 
 class GetServiceAPITestCase(APITestCase):
     def setUp(self) -> None:
         self.company = create_company()
-        self.robot = create_robot(self.company)
+        self.robot = create_robot(company=self.company)
         self.service = create_robot_service(self.robot)
         self.service_detail_url = reverse('companies:service-detail',
                                           kwargs={'company_pk': self.company.account.id,
@@ -68,7 +71,7 @@ class GetServiceAPITestCase(APITestCase):
 class UpdateServiceAPITestCase(APITestCase):
     def setUp(self) -> None:
         self.company = create_company()
-        self.robot = create_robot(self.company)
+        self.robot = create_robot(company=self.company)
         self.service = create_robot_service(self.robot)
 
         not_valid_status = fake.sentence(1)
@@ -130,7 +133,7 @@ class UpdateServiceAPITestCase(APITestCase):
 class DeleteServiceAPITestCase(APITestCase):
     def setUp(self) -> None:
         self.company = create_company()
-        self.robot = create_robot(self.company)
+        self.robot = create_robot(company=self.company)
         self.service = create_robot_service(self.robot)
         self.service_detail_url = reverse('companies:service-detail',
                                           kwargs={'company_pk': self.company.account.id,

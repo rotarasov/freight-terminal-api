@@ -26,9 +26,10 @@ class CreateNewRobotAPITestCase(APITestCase):
             'status': fake.random_element(Robot.Status.values)
         }
 
+        self.robot_list_url = reverse('companies:robot-list', kwargs={'pk': self.company.account.id})
+
     def test_valid_robot_creation(self):
-        response = self.client.post(
-            reverse('companies:robot-list', kwargs={'pk': self.company.account.id}), self.valid_robot, format='json')
+        response = self.client.post(self.robot_list_url, self.valid_robot, format='json')
         robots = Robot.objects.all()
         serializer = RobotSerializer(robots, many=True)
 
@@ -45,11 +46,13 @@ class CreateNewRobotAPITestCase(APITestCase):
 class GetRobotAPITestCase(APITestCase):
     def setUp(self) -> None:
         self.company = create_company()
-        self.robot = create_robot(self.company)
+        self.robot = create_robot(company=self.company)
+
+        self.robot_detail_url = reverse('companies:robot-detail', kwargs={'company_pk': self.company.account.id,
+                                                                          'robot_pk': self.robot.id})
 
     def test_company_read(self):
-        response = self.client.get(
-            reverse('companies:robot-detail', kwargs={'company_pk': self.company.account.id, 'robot_pk': self.robot.id}))
+        response = self.client.get(self.robot_detail_url)
         serializer = RobotSerializer(self.robot)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -59,7 +62,7 @@ class GetRobotAPITestCase(APITestCase):
 class UpdateRobotAPITestCase(APITestCase):
     def setUp(self) -> None:
         self.company = create_company()
-        self.robot = create_robot(self.company)
+        self.robot = create_robot(company=self.company)
 
         not_valid_status = fake.sentence(1)
         not_valid_type = fake.sentence(2)
@@ -85,10 +88,11 @@ class UpdateRobotAPITestCase(APITestCase):
             'status': not_valid_status
         }
 
+        self.robot_detail_url = reverse('companies:robot-detail', kwargs={'company_pk': self.company.account.id,
+                                                                          'robot_pk': self.robot.id})
+
     def test_valid_robot_partial_update(self):
-        response = self.client.patch(
-            reverse('companies:robot-detail', kwargs={'company_pk': self.company.account.id, 'robot_pk': self.robot.id}),
-            self.valid_partial_data, format='json')
+        response = self.client.patch(self.robot_detail_url, self.valid_partial_data, format='json')
         self.robot = Robot.objects.get(pk=self.robot.id)
         serializer = RobotSerializer(self.robot)
 
@@ -96,16 +100,11 @@ class UpdateRobotAPITestCase(APITestCase):
         self.assertEqual(response.data, dict(serializer.data))
 
     def test_invalid_robot_partial_update(self):
-        response = self.client.patch(
-            reverse('companies:robot-detail', kwargs={'company_pk': self.company.account.id, 'robot_pk': self.robot.id}),
-            self.invalid_partial_data, format='json')
-
+        response = self.client.patch(self.robot_detail_url, self.invalid_partial_data, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_valid_robot_update(self):
-        response = self.client.put(
-            reverse('companies:robot-detail', kwargs={'company_pk': self.company.account.id, 'robot_pk': self.robot.id}),
-            self.valid_data, format='json')
+        response = self.client.put(self.robot_detail_url, self.valid_data, format='json')
         self.robot = Robot.objects.get(pk=self.robot.id)
         serializer = RobotSerializer(self.robot)
 
@@ -113,20 +112,18 @@ class UpdateRobotAPITestCase(APITestCase):
         self.assertEqual(response.data, dict(serializer.data))
 
     def test_invalid_robot_update(self):
-        response = self.client.patch(
-            reverse('companies:robot-detail', kwargs={'company_pk': self.company.account.id, 'robot_pk': self.robot.id}),
-            self.invalid_data, format='json')
-
+        response = self.client.patch(self.robot_detail_url, self.invalid_data, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
 
 class DeleteRobotAPITestCase(APITestCase):
     def setUp(self) -> None:
         self.company = create_company()
-        self.robot = create_robot(self.company)
+        self.robot = create_robot(company=self.company)
+
+        self.robot_detail_url = reverse('companies:robot-detail', kwargs={'company_pk': self.company.account.id,
+                                                                          'robot_pk': self.robot.id})
 
     def test_robot_delete(self):
-        response = self.client.delete(
-            reverse('companies:robot-detail', kwargs={'company_pk': self.company.account.id, 'robot_pk': self.robot.id}),
-            format='json')
+        response = self.client.delete(self.robot_detail_url, format='json')
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
