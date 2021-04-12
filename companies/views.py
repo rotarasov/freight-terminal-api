@@ -39,6 +39,11 @@ class ServiceListCreateAPIView(generics.ListCreateAPIView):
         robot = generics.get_object_or_404(Robot, pk=self.kwargs['robot_pk'], company=company)
         return Service.objects.filter(robot=robot)
 
+    def perform_create(self, serializer):
+        service = serializer.save()
+        service.robot.start_transit()
+        service.robot.save()
+
 
 class ServiceRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Service.objects.all()

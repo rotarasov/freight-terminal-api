@@ -42,6 +42,12 @@ class Robot(models.Model):
     def __str__(self):
         return f'{self.model}({self.company})'
 
+    def start_transit(self):
+        self.status = Robot.Status.BUSY
+
+    def finish_transit(self):
+        self.status = Robot.Status.FREE
+
 
 class Service(models.Model):
     class Type(models.TextChoices):
@@ -63,6 +69,9 @@ class Service(models.Model):
 
     def __str__(self):
         return f'{self.type} by {self.robot}'
+
+    def is_started(self):
+        return self.status != Service.Status.NOT_STARTED
 
 
 class Transfer(models.Model):
