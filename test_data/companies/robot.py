@@ -18,6 +18,4 @@ def create_robot(**fields):
         if field not in fields:
             fields[field] = fake_value
 
-    robot = Robot.objects.create(**fields)
-
-    return robot
+    return Robot.objects.create(**fields)

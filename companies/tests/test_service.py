@@ -54,7 +54,7 @@ class GetServiceAPITestCase(APITestCase):
     def setUp(self) -> None:
         self.company = create_company()
         self.robot = create_robot(company=self.company)
-        self.service = create_robot_service(self.robot)
+        self.service = create_robot_service(robot=self.robot)
         self.service_detail_url = reverse('companies:service-detail',
                                           kwargs={'company_pk': self.company.account.id,
                                                   'robot_pk': self.robot.id,
@@ -72,7 +72,7 @@ class UpdateServiceAPITestCase(APITestCase):
     def setUp(self) -> None:
         self.company = create_company()
         self.robot = create_robot(company=self.company)
-        self.service = create_robot_service(self.robot)
+        self.service = create_robot_service(robot=self.robot)
 
         not_valid_status = fake.sentence(1)
         not_valid_datetime = 'not valid datetime'
@@ -134,7 +134,7 @@ class DeleteServiceAPITestCase(APITestCase):
     def setUp(self) -> None:
         self.company = create_company()
         self.robot = create_robot(company=self.company)
-        self.service = create_robot_service(self.robot)
+        self.service = create_robot_service(robot=self.robot)
         self.service_detail_url = reverse('companies:service-detail',
                                           kwargs={'company_pk': self.company.account.id,
                                                   'robot_pk': self.robot.id,

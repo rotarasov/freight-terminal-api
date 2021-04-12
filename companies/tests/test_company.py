@@ -108,11 +108,12 @@ class DeleteCompanyAPITestCase(APITestCase):
         self.company = create_company()
         self.not_existing_company_pk = 1000000
         self.company_detail_url = reverse('companies:detail', kwargs={'pk': self.company.account.id})
+        self.invalid_company_detail_url = reverse('companies:detail', kwargs={'pk': self.not_existing_company_pk})
 
     def test_valid_company_delete(self):
         response = self.client.delete(self.company_detail_url, format='json')
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
 
     def test_invalid_company_delete(self):
-        response = self.client.delete(self.company_detail_url, format='json')
+        response = self.client.delete(self.invalid_company_detail_url, format='json')
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)

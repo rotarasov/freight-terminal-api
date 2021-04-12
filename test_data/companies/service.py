@@ -5,11 +5,19 @@ from test_data.companies.robot import create_robot
 from companies.models import Company, Robot, Service
 
 
-def create_robot_service(robot=None):
-    if not robot:
-        robot = create_robot()
-    service = Service.objects.create(
-        arrival_datetime=fake.future_datetime(tzinfo=timezone.get_current_timezone()), robot=robot,
-        delay_time=fake.time_delta(), status=fake.random_element(Service.Status.values),
-        type=fake.random_element(Service.Type.values))
-    return service
+def create_robot_service(**fields):
+    fake_service_fields = {
+        'arrival_datetime': fake.future_datetime(tzinfo=timezone.get_current_timezone()),
+        'delay_time': fake.time_delta(),
+        'status': fake.random_element(Service.Status.values),
+        'type': fake.random_element(Service.Type.values)
+    }
+
+    for field, value in fake_service_fields.items():
+        if field not in fields:
+            fields[field] = value
+
+    if not fields.get('robot'):
+        fields['robot'] = create_robot()
+
+    return Service.objects.create(**fields)
