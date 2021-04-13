@@ -56,7 +56,8 @@ class Service(models.Model):
 
     class Status(models.TextChoices):
         NOT_STARTED = 'not_started', _('Not started')
-        IN_TRANSIT = 'in_transit', _('In transit')
+        IN_TRANSIT_WITHOUT_FREIGHT = 'in_transit_without_freight', _('In transit without freight')
+        IN_TRANSIT_WITH_FREIGHT = 'in_transit_with_freight', _('In transit with freight')
         TRANSFERING = 'transfering', _('Transfering')
         WAITING = 'waiting', _('Waiting')
         DONE = 'done', _('Done')
@@ -73,6 +74,9 @@ class Service(models.Model):
     def is_started(self):
         return self.status != Service.Status.NOT_STARTED
 
+    def return_freight(self):
+        pass
+
 
 class Transfer(models.Model):
     delivery_service = models.OneToOneField('Service', on_delete=models.CASCADE, related_name='delivery_transfer')
@@ -80,4 +84,8 @@ class Transfer(models.Model):
 
     def __str__(self):
         return f'{self.delivery_service}; {self.reception_service}'
+
+    def start_freight_return(self):
+        self.delivery_service.return_freight()
+        self.reception_service.return_freight()
 

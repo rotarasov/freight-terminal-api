@@ -14,6 +14,8 @@ class Freight(models.Model):
         TRANSFERING = 'transfering', _('Transfering')
         IN_RECEPTION_TRANSIT = 'in_reception_transit', _('In reception transit')
         DELIVERED = 'delivered', _('Delivered')
+
+        RETURNING = 'returning', _('Returning')
         RETURNED = 'returned', _('Returned')
 
     name = models.CharField(_('name'), max_length=150)
@@ -24,8 +26,19 @@ class Freight(models.Model):
     def __str__(self):
         return self.name
 
+    def sum_of_rule_coeffs(self):
+        return sum(rule.coefficient for rule in self.rules.all())
+
+    def return_damage_freight(self):
+        if self.transfer:
+            self.status = self.Status.RETURNING
+            self.save()
+            self.transfer.start_freight_return()
+
 
 class Rule(models.Model):
+    DAMAGE_THRESHOLD_VALUE = 0.2
+
     coefficient = models.FloatField(_('coefficient'), validators=[MaxValueValidator(1.0)])
     max_value = models.FloatField(_('max value'))
     min_value = models.FloatField(_('min value'))
@@ -36,6 +49,23 @@ class Rule(models.Model):
 
     def __str__(self):
         return f'{self.device}({self.freight})'
+
+    def is_violated(self) -> bool:
+        out_of_limit_values = 0
+
+        for state in self.states.all():
+            if state.value > self.max_value or state.value < self.min_value:
+                out_of_limit_values += 1
+                deviation = min(abs(state.value - self.max_value), abs(state.value - self.min_value))
+
+                if deviation > self.possible_deviation:
+                    return True
+
+        num_of_states = self.states.count()
+        if num_of_states and out_of_limit_values / num_of_states > self.DAMAGE_THRESHOLD_VALUE:
+            return True
+
+        return False
 
 
 class State(models.Model):

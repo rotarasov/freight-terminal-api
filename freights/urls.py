@@ -15,7 +15,7 @@ urlpatterns = [
 
     # State
     path('<int:freight_pk>/rules/<int:rule_pk>/states/', views.StateListCreateAPIView.as_view(), name='state-list'),
-    path('<int:freight_pk>/rules/<int:rule_pk>/states/<int:state_pk>',
+    path('<int:freight_pk>/rules/<int:rule_pk>/states/<int:state_pk>/',
          views.StateRetrieveUpdateDestroyAPIView.as_view(),
          name='state-detail'),
 ]
