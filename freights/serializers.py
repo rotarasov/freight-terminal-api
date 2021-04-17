@@ -65,12 +65,9 @@ class RuleSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
     def validate(self, attrs):
-        device = attrs.get('device')
-        min_value = attrs.get('min_value')
-        max_value = attrs.get('max_value')
-
-        if self.instance and not device:
-            device = self.instance.device
+        device = attrs.get('device', self.instance.device if self.instance else None)
+        min_value = attrs.get('min_value', self.instance.min_value if self.instance else None)
+        max_value = attrs.get('max_value', self.instance.max_value if self.instance else None)
 
         if max_value < min_value:
             raise serializers.ValidationError('Max value must be greater than min value')

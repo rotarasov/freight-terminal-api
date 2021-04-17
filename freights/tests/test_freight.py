@@ -5,7 +5,7 @@ from rest_framework.test import APITestCase
 from test_data import fake
 from test_data.companies.service import create_robot_service
 from test_data.freights.freight import create_freight
-from companies.models import Service, Transfer
+from companies.models import Service
 from freights.models import Freight
 from freights.serializers import FreightSerializer
 
@@ -52,7 +52,7 @@ class GetFreightAPITestCase(APITestCase):
         self.freight = create_freight(need_transfer=True)
         self.freight_detail_url = reverse('freights:detail', kwargs={'pk': self.freight.id})
 
-    def test_company_read(self):
+    def test_rule_read(self):
         response = self.client.get(self.freight_detail_url)
         serializer = FreightSerializer(self.freight)
 
@@ -86,7 +86,7 @@ class UpdateFreightAPITestCase(APITestCase):
 
         self.invalid_data = {
             'name': fake.sentence(1),
-            'status': 'asdasdasdasdhanjhbaovbgd',
+            'status': not_valid_status,
             'transfer': {
                 'delivery_service': self.freight.transfer.delivery_service.id,
                 'reception_service': self.freight.transfer.reception_service.id,
