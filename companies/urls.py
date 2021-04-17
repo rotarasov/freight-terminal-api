@@ -8,7 +8,7 @@ urlpatterns = [
     path('', views.CompanyListCreateAPIView.as_view(), name='list'),
     path('<int:pk>/', views.CompanyRetrieveUpdateDestroyAPIView.as_view(), name='detail'),
     path('<int:pk>/robots/', views.RobotListCreateAPIView.as_view(), name='robot-list'),
-    path('<int:company_pk>/robots/<int:robot_pk>', views.RobotRetrieveUpdateDestroyAPIView.as_view(),
+    path('<int:company_pk>/robots/<int:robot_pk>/', views.RobotRetrieveUpdateDestroyAPIView.as_view(),
          name='robot-detail'),
     path('<int:company_pk>/robots/<int:robot_pk>/services/', views.ServiceListCreateAPIView.as_view(),
          name='service-list'),
