@@ -19,7 +19,7 @@ class Freight(models.Model):
         RETURNED = 'returned', _('Returned')
 
     name = models.CharField(_('name'), max_length=150)
-    status = models.CharField(_('status'), max_length=30)
+    status = models.CharField(_('status'), max_length=30, choices=Status.choices)
     transfer = models.OneToOneField('companies.Transfer', on_delete=models.CASCADE, null=True)
     is_damaged = models.BooleanField(_('is damaged'), default=False)
 

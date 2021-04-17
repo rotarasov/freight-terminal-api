@@ -43,6 +43,8 @@ class TransferSerializer(serializers.ModelSerializer):
     class Meta:
         model = Transfer
         fields = '__all__'
+        extra_kwargs = {'delivery_service': {'validators': []},
+                        'reception_service': {'validators': []}}
 
     def validate_delivery_service(self, value):
         if value.type != Service.Type.DELIVERY:

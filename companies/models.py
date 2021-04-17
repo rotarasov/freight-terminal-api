@@ -17,7 +17,7 @@ class Company(models.Model):
 
     account = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, primary_key=True)
     name = models.CharField(_('name'), max_length=150)
-    type = models.CharField(_('type'), max_length=30)
+    type = models.CharField(_('type'), max_length=30, choices=Type.choices)
 
     def __str__(self):
         return self.name
@@ -84,6 +84,14 @@ class Transfer(models.Model):
 
     def __str__(self):
         return f'{self.delivery_service}; {self.reception_service}'
+
+    @classmethod
+    def exists(cls, delivery_service, reception_service, instance=None):
+        transfers = Transfer.objects.filter(models.Q(delivery_service=delivery_service) |
+                                            models.Q(reception_service=reception_service))
+        if instance:
+            return transfers.exclude(id=instance.id).exists()
+        return transfers.exists()
 
     def start_freight_return(self):
         self.delivery_service.return_freight()

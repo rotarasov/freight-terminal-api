@@ -12,6 +12,11 @@ class FreightSerializer(serializers.ModelSerializer):
         model = Freight
         fields = '__all__'
 
+    def validate_transfer(self, value_dict):
+        if Transfer.exists(**value_dict, instance=self.instance):
+            raise serializers.ValidationError('Transfer with this services already exists.')
+        return value_dict
+
     def validate(self, attrs):
         coefficient = attrs.get('coefficient')
 
@@ -30,7 +35,8 @@ class FreightSerializer(serializers.ModelSerializer):
         transfer_data = validated_data.pop('transfer', None)
         freight = Freight.objects.create(**validated_data)
         if transfer_data:
-            Transfer.objects.create(freight=freight, **transfer_data)
+            freight.transfer = Transfer.objects.create(**transfer_data)
+            freight.save()
         return freight
 
     def update(self, instance, validated_data):
@@ -38,14 +44,16 @@ class FreightSerializer(serializers.ModelSerializer):
 
         if transfer_data:
             if not instance.transfer:
-                Transfer.objects.create(freight=instance, **transfer_data)
+                instance.transfer = Transfer.objects.create(**transfer_data)
             else:
                 for attr, value in transfer_data.items():
-                    setattr(instance.transfer, attr, value)
+                    if getattr(instance.transfer, attr) != value:
+                        setattr(instance.transfer, attr, value)
                 instance.transfer.save()
 
         for attr, value in validated_data.items():
-            setattr(instance, attr, value)
+            if getattr(instance, attr) != value:
+                setattr(instance, attr, value)
         instance.save()
 
         return instance
