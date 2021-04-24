@@ -1,7 +1,6 @@
 from rest_framework import generics
 from rest_framework import views
 from rest_framework import status
-from rest_framework.exceptions import NotFound
 from rest_framework.response import Response
 
 from freights.models import Freight, Rule, State
