@@ -1,4 +1,8 @@
 from rest_framework import generics
+from rest_framework import views
+from rest_framework import status
+from rest_framework.exceptions import NotFound
+from rest_framework.response import Response
 
 from freights.models import Freight, Rule, State
 from freights.serializers import FreightSerializer, RuleSerializer, StateSerializer
@@ -12,6 +16,31 @@ class FreightListCreateAPIView(generics.ListCreateAPIView):
 class FreightRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Freight.objects.all()
     serializer_class = FreightSerializer
+
+
+class FreightHealthCheckAPIView(views.APIView):
+    def post(self, request, pk=None):
+        freight = generics.get_object_or_404(Freight, pk=pk)
+        if freight.damage_level > freight.DAMAGE_THRESHOLD_VALUE:
+            freight.is_damaged = True
+            freight.save()
+        return Response({'is_damaged': freight.is_damaged})
+
+
+class ReturnFreightAPIView(views.APIView):
+    def post(self, request, pk=None):
+        freight = generics.get_object_or_404(Freight, pk=pk)
+
+        if not freight.transfer:
+            return Response(data={'detail': 'Transfer is not assigned to the freight'},
+                            status=status.HTTP_400_BAD_REQUEST)
+
+        if freight.status not in [Freight.Status.RETURNING, Freight.Status.RETURNED]:
+            freight.start_return()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+
+        return Response(data={'detail': 'Freight is already on his way to be returned'},
+                        status=status.HTTP_400_BAD_REQUEST)
 
 
 class RuleListCreateAPIView(generics.ListCreateAPIView):
@@ -41,13 +70,6 @@ class StateListCreateAPIView(generics.ListCreateAPIView):
         freight = generics.get_object_or_404(Freight, pk=self.kwargs['freight_pk'])
         rule = generics.get_object_or_404(Rule, pk=self.kwargs['rule_pk'], freight=freight)
         return State.objects.filter(rule=rule)
-
-    def perform_create(self, serializer):
-        state = serializer.save()
-        if state.rule.is_violated():
-            state.rule.freight.is_damaged = True
-            state.rule.freight.save()
-            state.rule.freight.return_damage_freight()
 
 
 class StateRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView):

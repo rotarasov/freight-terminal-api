@@ -7,6 +7,8 @@ from django.core.validators import MaxValueValidator
 
 
 class Freight(models.Model):
+    DAMAGE_THRESHOLD_VALUE = 0.2
+
     class Status(models.TextChoices):
         NOT_ASSIGNED = 'not_assigned', _('Not assigned')
         WAITING = 'waiting', _('Waiting')
@@ -29,15 +31,29 @@ class Freight(models.Model):
     def sum_of_rule_coeffs(self):
         return sum(rule.coefficient for rule in self.rules.all())
 
-    def return_damage_freight(self):
-        if self.transfer:
-            self.status = self.Status.RETURNING
-            self.save()
-            self.transfer.start_freight_return()
+    @property
+    def damage_level(self):
+        damage_level = 0
+
+        for rule in self.rules.all():
+            if rule.states.count() > rule.MIN_NUMBER_OF_STATES:
+                damage_level += rule.coefficient * rule.violation_probability
+
+        return damage_level
+
+    def start_return(self):
+        self.status = self.Status.RETURNING
+        self.transfer.start_freight_return()
+        self.save()
+
+    def finish_return(self):
+        self.status = self.Status.RETURNED
+        self.save()
 
 
 class Rule(models.Model):
-    DAMAGE_THRESHOLD_VALUE = 0.2
+    MIN_NUMBER_OF_STATES = 10
+    MAX_VIOLATION_PROBABILITY = 1
 
     coefficient = models.FloatField(_('coefficient'), validators=[MaxValueValidator(1.0)])
     max_value = models.FloatField(_('max value'))
@@ -50,7 +66,8 @@ class Rule(models.Model):
     def __str__(self):
         return f'{self.device}({self.freight})'
 
-    def is_violated(self) -> bool:
+    @property
+    def violation_probability(self) -> int:
         out_of_limit_values = 0
 
         for state in self.states.all():
@@ -59,13 +76,10 @@ class Rule(models.Model):
                 deviation = min(abs(state.value - self.max_value), abs(state.value - self.min_value))
 
                 if deviation > self.possible_deviation:
-                    return True
+                    return self.MAX_VIOLATION_PROBABILITY
 
         num_of_states = self.states.count()
-        if num_of_states and out_of_limit_values / num_of_states > self.DAMAGE_THRESHOLD_VALUE:
-            return True
-
-        return False
+        return out_of_limit_values / num_of_states if num_of_states else 0
 
 
 class State(models.Model):

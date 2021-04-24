@@ -44,9 +44,11 @@ class Robot(models.Model):
 
     def start_transit(self):
         self.status = Robot.Status.BUSY
+        self.save()
 
     def finish_transit(self):
         self.status = Robot.Status.FREE
+        self.save()
 
 
 class Service(models.Model):

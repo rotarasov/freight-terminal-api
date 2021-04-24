@@ -18,7 +18,9 @@ class FreightSerializer(serializers.ModelSerializer):
         return value_dict
 
     def validate(self, attrs):
-        coefficient = attrs.get('coefficient')
+        coefficient = attrs.get('coefficient', self.instance.coefficient if self.instance else None)
+        transfer = attrs.get('transfer', self.instance.transfer if self.instance else None)
+        status = attrs.get('status', self.instance.status if self.instance else None)
 
         current_coefficient_sum = 0
         if self.instance:
@@ -28,6 +30,9 @@ class FreightSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError({
                 'coefficient': 'Sum of coefficients in freight rules can not be greater than 1'
             })
+
+        if not transfer and status != Freight.Status.NOT_ASSIGNED:
+            raise serializers.ValidationError('Status must be "not_assigned" when transfer is not assigned to freight')
 
         return attrs
 

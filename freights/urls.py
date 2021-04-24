@@ -8,6 +8,8 @@ urlpatterns = [
     # Freight
     path('', views.FreightListCreateAPIView.as_view(), name='list'),
     path('<int:pk>/', views.FreightRetrieveUpdateDestroyAPIView.as_view(), name='detail'),
+    path('<int:pk>/check-health/', views.FreightHealthCheckAPIView.as_view(), name='check-health'),
+    path('<int:pk>/return/', views.ReturnFreightAPIView.as_view(), name='return'),
 
     # Rule
     path('<int:pk>/rules/', views.RuleListCreateAPIView.as_view(), name='rule-list'),
