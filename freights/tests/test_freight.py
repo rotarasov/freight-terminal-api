@@ -8,6 +8,8 @@ from test_data.freights.freight import create_freight
 from companies.models import Service
 from freights.models import Freight
 from freights.serializers import FreightSerializer
+from test_data.freights.rule import create_rule
+from test_data.freights.state import create_state
 
 
 class CreateNewFreightAPITestCase(APITestCase):
@@ -45,6 +47,26 @@ class CreateNewFreightAPITestCase(APITestCase):
     def test_invalid_freight_creation(self):
         response = self.client.post(self.freight_list_url, self.invalid_freight, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+
+class FreightHealthCheckAPITestCase(APITestCase):
+    def setUp(self) -> None:
+        self.freight = create_freight()
+        self.rule = create_rule(freight=self.freight)
+        for i in range(20):
+            create_state(limit_values=(self.rule.min_value, self.rule.max_value), rule=self.rule)
+
+        self.health_check_url = reverse('freights:check-health', kwargs={'pk': self.freight.id})
+
+    def test_health_check_without_damage(self):
+        response = self.client.post(self.health_check_url)
+        self.assertFalse(response.data['is_damaged'])
+
+    def test_health_check_with_damage(self):
+        for i in range(10):
+            create_state(limit_values=(self.rule.max_value, 2 * self.rule.max_value), rule=self.rule)
+        response = self.client.post(self.health_check_url)
+        self.assertTrue(response.data['is_damaged'])
 
 
 class GetFreightAPITestCase(APITestCase):
