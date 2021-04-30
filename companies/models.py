@@ -57,15 +57,21 @@ class Service(models.Model):
         RECEPTION = 'reception', _('Reception')
 
     class Status(models.TextChoices):
+        # Common statuses
         NOT_STARTED = 'not_started', _('Not started')
-        IN_TRANSIT_WITHOUT_FREIGHT = 'in_transit_without_freight', _('In transit without freight')
-        IN_TRANSIT_WITH_FREIGHT = 'in_transit_with_freight', _('In transit with freight')
-        TRANSFERING = 'transfering', _('Transfering')
         WAITING = 'waiting', _('Waiting')
         DONE = 'done', _('Done')
 
+        # Delivery statuses
+        IN_TRANSIT_WITHOUT_FREIGHT = 'in_transit_without_freight', _('In transit without freight')
+        IN_TRANSIT_WITH_FREIGHT = 'in_transit_with_freight', _('In transit with freight')
+        TRANSFERING = 'transfering', _('Transfering')
+
+        # Return statuses
+        RETURNING_FREIGHT = 'returning_freight', _('Returning freight')
+        RETURNED_FREIGHT = 'returned_freight', _('Returned freight')
+
     arrival_datetime = models.DateTimeField(_('arrival datetime'))
-    delay_time = models.DurationField(_('delay time'), default=timedelta())
     robot = models.ForeignKey('Robot', on_delete=models.CASCADE, related_name='services')
     type = models.CharField(_('type'), max_length=30, choices=Type.choices)
     status = models.CharField(_('status'), max_length=30, choices=Status.choices, default=Status.NOT_STARTED)
@@ -76,8 +82,13 @@ class Service(models.Model):
     def is_started(self):
         return self.status != Service.Status.NOT_STARTED
 
-    def return_freight(self):
-        pass
+    def start_freight_return(self):
+        self.status = self.Status.RETURNING_FREIGHT
+        self.save()
+
+    def finish_freight_return(self):
+        self.status = self.Status.RETURNED_FREIGHT
+        self.save()
 
 
 class Transfer(models.Model):
@@ -96,6 +107,10 @@ class Transfer(models.Model):
         return transfers.exists()
 
     def start_freight_return(self):
-        self.delivery_service.return_freight()
-        self.reception_service.return_freight()
+        self.delivery_service.start_freight_return()
+        self.reception_service.start_freight_return()
+
+    def finish_freight_return(self):
+        self.delivery_service.finish_freight_return()
+        self.reception_service.finish_freight_return()
 

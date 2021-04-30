@@ -20,7 +20,6 @@ class CreateNewServiceAPITestCase(APITestCase):
 
         self.valid_service = {
             'arrival_datetime': fake.future_datetime(tzinfo=timezone.get_current_timezone()),
-            'delay_time': fake.time_delta(),
             'robot': self.free_robot.id,
             'status': fake.random_element(Service.Status.values),
             'type': fake.random_element(Service.Type.values)
@@ -119,7 +118,6 @@ class UpdateServiceAPITestCase(APITestCase):
 
         self.valid_data = {
             'arrival_datetime': self.service.arrival_datetime,
-            'delay_time': self.service.delay_time,
             'robot': self.robot.id,
             'status': fake.random_element([s for s in Service.Status.values if s != self.robot.status]),
             'type': self.service.type
@@ -127,7 +125,6 @@ class UpdateServiceAPITestCase(APITestCase):
 
         self.invalid_data = {
             'arrival_datetime': not_valid_datetime,
-            'delay_time': self.service.delay_time,
             'robot': self.robot.id,
             'status': self.service.status,
             'type': self.service.type

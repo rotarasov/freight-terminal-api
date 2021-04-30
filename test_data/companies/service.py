@@ -8,7 +8,6 @@ from companies.models import Company, Robot, Service
 def create_robot_service(**fields):
     fake_service_fields = {
         'arrival_datetime': fake.future_datetime(tzinfo=timezone.get_current_timezone()),
-        'delay_time': fake.time_delta(),
         'status': fake.random_element(Service.Status.values),
         'type': fake.random_element(Service.Type.values)
     }
