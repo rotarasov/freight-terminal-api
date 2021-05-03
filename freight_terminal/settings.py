@@ -1,15 +1,23 @@
-from environ import Path
+from environ import Path, Env
 import django_heroku
+
+
+env = Env()
+env.read_env('.env')
+
 
 # Build paths inside the project like this: BASE_DIR('subdir').
 BASE_DIR = Path(__file__) - 2
 
 
-SECRET_KEY = 'ct+98u9zjps$dyx*2d!)=zl=0%0q8a-58+pj$)*m$kgd0!(3v2'
+# SECURITY WARNING: keep the secret key used in production secret!
+SECRET_KEY = env.str('SECRET_KEY')
 
-DEBUG = True
+# SECURITY WARNING: don't run with debug turned on in production!
+DEBUG = env.bool('DEBUG', default=False)
 
-ALLOWED_HOSTS = []
+
+ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', default=[])
 
 
 # Application definition
@@ -87,12 +95,7 @@ AUTH_USER_MODEL = 'users.User'
 
 DATABASE_BACKUP_FILENAME = 'db_backup.json'
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR('db.sqlite3'),
-    }
-}
+DATABASES = {'default': env.db('DATABASE_URL')}
 
 
 # Password validation
