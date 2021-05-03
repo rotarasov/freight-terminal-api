@@ -1,3 +1,5 @@
+from datetime import timedelta
+
 from environ import Path, Env
 import django_heroku
 
@@ -30,6 +32,10 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': (
         'rest_framework.permissions.IsAuthenticated',
     )
+}
+
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(days=7)
 }
 
 INSTALLED_APPS = [
