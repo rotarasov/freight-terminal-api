@@ -81,6 +81,7 @@ ENV/
 .mypy_cache/
 .DS_Store
 *.sqlite3
+backup_db.json
 media/
 *.pyc
 *.db

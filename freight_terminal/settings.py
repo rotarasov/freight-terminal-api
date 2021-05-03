@@ -1,4 +1,5 @@
-from environ import Path, Env
+from environ import Path
+import django_heroku
 
 # Build paths inside the project like this: BASE_DIR('subdir').
 BASE_DIR = Path(__file__) - 2
@@ -13,6 +14,16 @@ ALLOWED_HOSTS = []
 
 # Application definition
 
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ),
+
+    'DEFAULT_PERMISSION_CLASSES': (
+        'rest_framework.permissions.IsAuthenticated',
+    )
+}
+
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -22,6 +33,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 
     'rest_framework',
+    'corsheaders',
 
     'users',
     'companies',
@@ -32,11 +44,16 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+]
+
+CORS_ALLOWED_ORIGIN_REGEXES = [
+    r'^https?://localhost:3000$'
 ]
 
 ROOT_URLCONF = 'freight_terminal.urls'
@@ -67,6 +84,8 @@ AUTH_USER_MODEL = 'users.User'
 
 # Database
 # https://docs.djangoproject.com/en/3.1/ref/settings/#databases
+
+DATABASE_BACKUP_FILENAME = 'db_backup.json'
 
 DATABASES = {
     'default': {
@@ -113,3 +132,6 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/3.1/howto/static-files/
 
 STATIC_URL = '/static/'
+
+# Heroku
+django_heroku.settings(locals())
