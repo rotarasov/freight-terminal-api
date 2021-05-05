@@ -1,7 +1,14 @@
-from rest_framework import generics
+from rest_framework import generics, views
+from rest_framework.response import Response
 
 from companies.models import Company, Robot, Service
 from companies.serializers import CompanySerializer, RobotSerializer, ServiceSerializer
+
+
+class GetCompanyTypesAPIVIew(views.APIView):
+    def get(self, *args, **kwargs):
+        types = [{'value': type_[0], 'label': type_[1]} for type_ in Company.Type.choices]
+        return Response(types)
 
 
 class CompanyListCreateAPIView(generics.ListCreateAPIView):

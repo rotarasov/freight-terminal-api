@@ -31,4 +31,5 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
     def validate(self, attrs):
         data = super().validate(attrs)
         data['user_id'] = self.user.id
+        data['is_superuser'] = self.user.is_superuser
         return data

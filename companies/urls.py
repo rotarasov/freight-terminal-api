@@ -6,6 +6,7 @@ app_name = 'companies'
 
 urlpatterns = [
     path('', views.CompanyListCreateAPIView.as_view(), name='list'),
+    path('types/', views.GetCompanyTypesAPIVIew.as_view(), name='types'),
     path('<int:pk>/', views.CompanyRetrieveUpdateDestroyAPIView.as_view(), name='detail'),
     path('<int:pk>/robots/', views.RobotListCreateAPIView.as_view(), name='robot-list'),
     path('<int:company_pk>/robots/<int:robot_pk>/', views.RobotRetrieveUpdateDestroyAPIView.as_view(),
